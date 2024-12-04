@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 import { useItems } from "../context/ItemContext"; 
-import { IItem } from "../types"; 
+import { IItem, NewItem } from "../types"; 
 
 const ItemList: React.FC = () => {
   const { items, deleteItem, editItem, addItem, error, success } = useItems();
@@ -31,6 +31,7 @@ const ItemList: React.FC = () => {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState(0);
+  const [image , setImage] = useState<string>("");
 
   const handleCreateOpen = () => setOpenCreate(true);
   const handleCreateClose = () => setOpenCreate(false);
@@ -40,6 +41,7 @@ const ItemList: React.FC = () => {
     setName(item.name);
     setCategory(item.category);
     setPrice(item.price);
+    setImage(item.image || "" )
     setOpenEdit(true);
   };
 
@@ -59,15 +61,14 @@ const ItemList: React.FC = () => {
     }
 
     try {
-      const newItem: IItem = {
-        _id: "",
+      const newItem: NewItem = {
         name,
         category,
         price,
-        imageUrl: "", 
+        image 
       };
 
-      addItem(newItem); 
+      addItem(newItem);
       handleCreateClose(); 
     } catch (error) {
       console.error("Error creating item:", error);
@@ -117,6 +118,7 @@ const ItemList: React.FC = () => {
               <TableCell>Name</TableCell>
               <TableCell>Category</TableCell>
               <TableCell>Price</TableCell>
+              <TableCell>Image</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -126,6 +128,21 @@ const ItemList: React.FC = () => {
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.category}</TableCell>
                 <TableCell>{item.price}</TableCell>
+                <TableCell>
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    "No image available"
+                  )}
+                </TableCell>
                 <TableCell>
                   <Button
                     color="primary"

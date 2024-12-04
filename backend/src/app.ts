@@ -6,13 +6,19 @@ import path from "path";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import itemRoutes from "./routes/itemRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import { getDirname } from "./utils/getDirname.js";
+
 dotenv.config();
+
+const __dirname = getDirname(import.meta.url)
+
 
 const app = express();
 
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
+app.use('/public' , express.static('public'))
 
 app.use(morgan("dev"));
 app.use(errorHandler)

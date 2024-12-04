@@ -38,13 +38,13 @@ export const ItemProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const addItem = async (item: IItem) => {
+  const addItem = async (item: Partial<IItem>) => {
     try {
       const response = await axiosInstance.post("/items", item, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }); 
+      });
       setItems([...items, response.data]);
       setSuccess(true);
     } catch (error) {

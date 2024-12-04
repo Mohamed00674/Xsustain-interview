@@ -9,7 +9,7 @@ export interface IItem extends Document {
   name: string;
   price: number;
   category: string;
-  image: Buffer;
+  image : string
   ratings: IRating[]; 
 }
 
@@ -18,7 +18,7 @@ const itemSchema = new Schema<IItem>(
     name: { type: String, required: true },
     price: { type: Number, required: true },
     category: { type: String, required: true },
-    image: { type: Buffer, required: false },
+    image: { type: String, required: false },
     ratings: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

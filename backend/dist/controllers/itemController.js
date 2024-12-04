@@ -1,8 +1,16 @@
 import Item from "../models/itemModel.js";
 export const createItem = async (req, res) => {
     try {
-        const image = req.file?.path;
-        const newItem = await Item.create(req.body);
+        const imagePath = req.file?.filename;
+        if (!imagePath) {
+            return res.status(400).json({ error: "No image uploaded" });
+        }
+        console.log(req.file);
+        const newItemData = {
+            ...req.body,
+            image: imagePath,
+        };
+        const newItem = await Item.create(newItemData);
         res.status(201).json(newItem);
     }
     catch (error) {
@@ -77,17 +85,17 @@ export const addRating = async (req, res) => {
     const { itemId, rating } = req.body;
     const userId = req.user?.id;
     if (!userId) {
-        return res.status(400).json({ message: 'User not authenticated' });
+        return res.status(400).json({ message: "User not authenticated" });
     }
     if (rating < 1 || rating > 5) {
-        return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+        return res.status(400).json({ message: "Rating must be between 1 and 5" });
     }
     try {
         const item = await Item.findById(itemId);
         if (!item) {
-            return res.status(404).json({ message: 'Item not found' });
+            return res.status(404).json({ message: "Item not found" });
         }
-        const existingRating = item.ratings.find(rating => rating.userId.toString() === userId);
+        const existingRating = item.ratings.find((rating) => rating.userId.toString() === userId);
         if (existingRating) {
             existingRating.rating = rating;
         }
@@ -98,26 +106,26 @@ export const addRating = async (req, res) => {
         return res.json(item);
     }
     catch (error) {
-        return res.status(500).json({ message: 'Error adding rating' });
+        return res.status(500).json({ message: "Error adding rating" });
     }
 };
 export const removeRating = async (req, res) => {
     const { itemId } = req.params;
     const userId = req.user?.id;
     if (!userId) {
-        return res.status(400).json({ message: 'User not authenticated' });
+        return res.status(400).json({ message: "User not authenticated" });
     }
     try {
         const item = await Item.findById(itemId);
         if (!item) {
-            return res.status(404).json({ message: 'Item not found' });
+            return res.status(404).json({ message: "Item not found" });
         }
-        item.ratings = item.ratings.filter(rating => rating.userId.toString() !== userId);
+        item.ratings = item.ratings.filter((rating) => rating.userId.toString() !== userId);
         await item.save();
         return res.json(item);
     }
     catch (error) {
-        return res.status(500).json({ message: 'Error removing rating' });
+        return res.status(500).json({ message: "Error removing rating" });
     }
 };
 //# sourceMappingURL=itemController.js.map

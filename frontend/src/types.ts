@@ -9,11 +9,18 @@ export interface IItem {
   name: string;
   price: number;
   category: string;
-  imageUrl ?: string;
+  image?: string;
   ratings?: [
     {
       userId: number;
       rating: number;
     }
   ];
+}
+
+export interface NewItem {
+  name: string;
+  price: number;
+  category: string;
+  image?: string;
 }
