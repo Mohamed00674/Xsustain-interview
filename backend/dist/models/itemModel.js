@@ -14,5 +14,6 @@ const itemSchema = new Schema({
     timestamps: true,
     collection: 'items',
 });
+itemSchema.index({ name: "text", category: "text" }, { weights: { name: 5, category: 1 } });
 export default mongoose.model('Item', itemSchema);
 //# sourceMappingURL=itemModel.js.map

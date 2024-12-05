@@ -31,5 +31,10 @@ const itemSchema = new Schema<IItem>(
     collection: 'items', 
   }
 );
+itemSchema.index(
+  { name: "text", category: "text" },
+  { weights: { name: 5, category: 1 } }
+);
+
 
 export default mongoose.model<IItem>('Item', itemSchema);

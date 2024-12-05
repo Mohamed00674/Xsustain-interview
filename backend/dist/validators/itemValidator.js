@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, check, param } from 'express-validator';
 export const validateItem = [
     body('name')
         .isString()
@@ -20,5 +20,11 @@ export const validateItemId = [
     param('id')
         .isMongoId()
         .withMessage('Invalid item ID'),
+];
+export const validateQuery = [
+    check('query')
+        .isString()
+        .optional()
+        .withMessage('Query must be a string'),
 ];
 //# sourceMappingURL=itemValidator.js.map

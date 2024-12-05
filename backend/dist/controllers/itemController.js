@@ -128,4 +128,21 @@ export const removeRating = async (req, res) => {
         return res.status(500).json({ message: "Error removing rating" });
     }
 };
+export const search = async (req, res) => {
+    const { query } = req.query;
+    if (!query || typeof query !== "string") {
+        return res.status(400).json({ error: "Search query is required and must be a string" });
+    }
+    try {
+        const items = await Item.find({ $text: { $search: query } }, { score: { $meta: "textScore" } }).sort({ score: { $meta: "textScore" } });
+        if (!items.length) {
+            return res.status(404).json({ message: "No items found" });
+        }
+        res.status(200).json(items);
+    }
+    catch (error) {
+        console.log("Error during search:", error);
+        res.status(400).json({ error: "An error occurred during the search" });
+    }
+};
 //# sourceMappingURL=itemController.js.map
