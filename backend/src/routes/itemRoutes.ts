@@ -22,7 +22,7 @@ itemRoutes.get("/search" , validateQuery,  search )
 itemRoutes.get('/:id', validateItemId, validateRequest, getItemById);
 itemRoutes.put('/:id', [...validateItem, ...validateItemId], validateRequest, updateItem);
 itemRoutes.delete('/:id', authenticate, validateItemId, validateRequest, deleteItem);
-itemRoutes.post('/items/rating', addRating)
-itemRoutes.delete('/items/:id/rating', removeRating);
+itemRoutes.post('//:itemId/rate', addRating)
+itemRoutes.delete('/:id/rating', removeRating);
 
 export default itemRoutes;

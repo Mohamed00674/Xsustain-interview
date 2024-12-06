@@ -13,6 +13,8 @@ interface ItemContextType {
   deleteItem: (id: string) => void;
   editItem: (id: string, updatedItem: IItem) => void;
   searchItems: (query: string) => void;
+  removeRating: (itemId: string) => void;
+  addOrUpdateRating: (itemId: string, rating: number) => void;
   error: string | null;
   success: boolean;
 }
@@ -121,6 +123,46 @@ export const ItemProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error("Error updating item:", error);
     }
   };
+  const addOrUpdateRating = async (itemId: string, rating: number) => {
+  try {
+    const response = await axiosInstance.post(`/items/${itemId}/rate`, { rating }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item._id === itemId ? response.data.item : item
+      )
+    );
+    setSuccess(true);
+  } catch (error) {
+    setError('Failed to add/update rating.');
+    console.error('Error adding/updating rating:', error);
+  }
+};
+
+const removeRating = async (itemId: string) => {
+  try {
+    const response = await axiosInstance.delete(`/items/${itemId}/rating`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item._id === itemId ? response.data.item : item
+      )
+    );
+    setSuccess(true);
+  } catch (error) {
+    setError('Failed to remove rating.');
+    console.error('Error removing rating:', error);
+  }
+};
+
 
   useEffect(() => {
     fetchItems();
@@ -138,6 +180,8 @@ export const ItemProvider: React.FC<{ children: React.ReactNode }> = ({
         editItem,
         uploadImage,
         searchItems,
+        addOrUpdateRating,
+        removeRating,
         error,
         success,
       }}

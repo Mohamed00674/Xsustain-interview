@@ -1,4 +1,5 @@
 import Item from "../models/itemModel.js";
+import mongoose from "mongoose";
 export const createItem = async (req, res) => {
     try {
         const imagePath = req.file?.filename;
@@ -81,53 +82,6 @@ export const deleteItem = async (req, res) => {
         res.status(400).json({ error: "Invalid ID" });
     }
 };
-export const addRating = async (req, res) => {
-    const { itemId, rating } = req.body;
-    const userId = req.user?.id;
-    if (!userId) {
-        return res.status(400).json({ message: "User not authenticated" });
-    }
-    if (rating < 1 || rating > 5) {
-        return res.status(400).json({ message: "Rating must be between 1 and 5" });
-    }
-    try {
-        const item = await Item.findById(itemId);
-        if (!item) {
-            return res.status(404).json({ message: "Item not found" });
-        }
-        const existingRating = item.ratings.find((rating) => rating.userId.toString() === userId);
-        if (existingRating) {
-            existingRating.rating = rating;
-        }
-        else {
-            item.ratings.push({ userId, rating });
-        }
-        await item.save();
-        return res.json(item);
-    }
-    catch (error) {
-        return res.status(500).json({ message: "Error adding rating" });
-    }
-};
-export const removeRating = async (req, res) => {
-    const { itemId } = req.params;
-    const userId = req.user?.id;
-    if (!userId) {
-        return res.status(400).json({ message: "User not authenticated" });
-    }
-    try {
-        const item = await Item.findById(itemId);
-        if (!item) {
-            return res.status(404).json({ message: "Item not found" });
-        }
-        item.ratings = item.ratings.filter((rating) => rating.userId.toString() !== userId);
-        await item.save();
-        return res.json(item);
-    }
-    catch (error) {
-        return res.status(500).json({ message: "Error removing rating" });
-    }
-};
 export const search = async (req, res) => {
     const { query } = req.query;
     if (!query || typeof query !== "string") {
@@ -143,6 +97,49 @@ export const search = async (req, res) => {
     catch (error) {
         console.log("Error during search:", error);
         res.status(400).json({ error: "An error occurred during the search" });
+    }
+};
+export const addRating = async (req, res) => {
+    const { itemId } = req.params;
+    const { rating } = req.body;
+    const { userId } = req.user.id;
+    if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: "rating must be between 1 and 5" });
+    }
+    try {
+        const item = await Item.findById(itemId);
+        if (!item) {
+            return res.status(404).json({ message: "item not found" });
+        }
+        const existingRatingIndex = item.ratings.findIndex((r) => r.userId.toString() === userId);
+        if (existingRatingIndex !== -1) {
+            item.ratings[existingRatingIndex].rating = rating;
+        }
+        else {
+            item.ratings.push({ userId: new mongoose.Types.ObjectId(userId), rating });
+        }
+        await item.save();
+    }
+    catch (error) {
+        console.error("error while updating and adding ", error);
+        res.status(400).json({ message: "Bad Request" });
+    }
+};
+export const removeRating = async (req, res) => {
+    const { itemId } = req.params;
+    const userId = req.user.id;
+    try {
+        const item = await Item.findById(itemId);
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found.' });
+        }
+        item.ratings = item.ratings.filter((r) => r.userId.toString() !== userId);
+        await item.save();
+        res.status(200).json({ message: 'Rating removed successfully.', item });
+    }
+    catch (error) {
+        console.error('Error removing rating:', error);
+        res.status(500).json({ message: 'Internal server error.' });
     }
 };
 //# sourceMappingURL=itemController.js.map

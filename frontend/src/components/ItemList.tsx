@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import { useItems } from "../context/ItemContext"; 
 import { IItem, NewItem } from "../types"; 
+//import ItemRating from "./ItemRating";
 
 const ItemList: React.FC = () => {
   const { items, deleteItem, editItem, addItem, error, success } = useItems();
@@ -280,6 +281,12 @@ const ItemList: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* <ItemRating
+        itemId={item._id}
+        currentRating={
+          item.ratings.find((r) => r.userId === "currentUserId")?.rating || null
+        }
+      /> */}
     </Box>
   );
 };
