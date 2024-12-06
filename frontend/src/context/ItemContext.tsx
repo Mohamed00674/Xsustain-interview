@@ -1,15 +1,18 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axiosInstance from "../utilis/axiosInstance"; 
-import { IItem } from "../types"; 
+import { IItem} from "../types"; 
 import { useAuth } from "./AuthContext"; 
 
 interface ItemContextType {
   items: IItem[];
+  searchResults: IItem[];
+  searchQuery: string;
   fetchItems: () => void;
   addItem: (item: IItem) => void;
   uploadImage: (image: string) => Promise<string>;
   deleteItem: (id: string) => void;
   editItem: (id: string, updatedItem: IItem) => void;
+  searchItems: (query: string) => void;
   error: string | null;
   success: boolean;
 }
@@ -20,9 +23,33 @@ export const ItemProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [items, setItems] = useState<IItem[]>([]);
+  const [searchResults, setSearchResults] = useState<IItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>(""); 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const { token } = useAuth();
+
+  const searchItems = async (query: string) => {
+
+    setSearchQuery(query)
+    if (!query.trim()) {
+      setSearchResults([])
+      return; 
+    }
+    try {
+      const response = await axiosInstance.get("/items/search", {
+        params: { query },
+        headers: {
+          Authorization : `Bearer ${token} `
+        }
+      })
+      setSearchResults(response.data)
+    } catch (error) {
+      setError("failed to search item")
+      console.error( "Error searchning Item" ,error);
+      
+    }
+  };
 
   const fetchItems = async () => {
     try {
@@ -52,31 +79,31 @@ export const ItemProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error("Error adding item:", error);
     }
   };
-const uploadImage = async (image: string): Promise<string> => {
-  try {
-    const formData = new FormData();
-    formData.append("image", image);
+  const uploadImage = async (image: string): Promise<string> => {
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
 
-    const response = await axiosInstance.post("/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+      const response = await axiosInstance.post("/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    return response.data.imageUrl;
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    throw new Error("Image upload failed");
-  }
-};
+      return response.data.imageUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw new Error("Image upload failed");
+    }
+  };
   const deleteItem = async (id: string) => {
     try {
       await axiosInstance.delete(`/items/${id}`, {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       });
-      setItems(items.filter((item) => item._id !== id)); 
+      setItems(items.filter((item) => item._id !== id));
       setSuccess(true);
     } catch (error) {
       setError("Failed to delete item");
@@ -86,8 +113,8 @@ const uploadImage = async (image: string): Promise<string> => {
 
   const editItem = async (id: string, updatedItem: IItem) => {
     try {
-      const response = await axiosInstance.put(`/items/${id}`, updatedItem); 
-      setItems(items.map((item) => (item._id === id ? response.data : item))); 
+      const response = await axiosInstance.put(`/items/${id}`, updatedItem);
+      setItems(items.map((item) => (item._id === id ? response.data : item)));
       setSuccess(true);
     } catch (error) {
       setError("Failed to update item");
@@ -96,18 +123,21 @@ const uploadImage = async (image: string): Promise<string> => {
   };
 
   useEffect(() => {
-    fetchItems(); 
+    fetchItems();
   }, []);
 
   return (
     <ItemContext.Provider
       value={{
         items,
+        searchResults,
+        searchQuery,
         fetchItems,
         addItem,
         deleteItem,
         editItem,
         uploadImage,
+        searchItems,
         error,
         success,
       }}
